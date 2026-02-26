@@ -71,14 +71,12 @@ Full-Stack-Store-Management-System(SMS)
 │   │   ├── utils/                          
 │   │   │   ├── response.py
 │   │   │   ├── validators.py
-│   │   │   └── constants.py
-│   │   ├── alembic/                          
-│   │   ├── app.js                          
+│   │   │   └── constants.py                                              
 │   │   └── providers/
-│   │       ├── test_auth.py
-│   │       ├── test_product.py
-│   │       └── test_order.js
-│	├── alembic/                                             # Migrations (important for PostgreSQL)
+│   │       ├── email.py
+│   │       ├── payment.py
+│   │       └── sms.js
+│	├── alembic/                                              # Migrations (important for PostgreSQL)
 │	├── tests/
 │   │   ├── test_auth.py
 │   │   ├── test_products.py
