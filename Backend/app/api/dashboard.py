@@ -2,9 +2,22 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
+from app.schemas.dashboard import SalesSummary, TopProduct, MonthlyRevenue, CashierPerformance, CombinedDashboardResponse
 from app.services.dashboard_service import DashboardService
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
+@router.get("/combined", response_model=CombinedDashboardResponse)
+def get_combined_dashboard(
+    start_date: str = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: str = Query(None, description="End date in YYYY-MM-DD format"),
+    limit: int = Query(5, description="Number of top products to return"),
+    year: int = Query(..., description="Year for which to calculate monthly revenue"),
+    db: Session = Depends(get_db)
+):
+    service = DashboardService(db)
+    combined_data = service.get_combined_dashboard_data(start_date, end_date, limit, year)
+    return combined_data
 
 @router.get("/summary")
 def sales_summary(
