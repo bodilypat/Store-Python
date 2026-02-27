@@ -45,7 +45,7 @@ class DashboardService:
             .all()
         )
         return results
-    
+  
     @staticmethod
     def monthly_revenue(db: Session, year: int):
         results = (
@@ -73,6 +73,61 @@ class DashboardService:
         results = query.group_by(User.user_id).order_by(func.sum(Sale.total_amount).desc()).all()
         return results
     
+    @staticmethod
+    def combined_dashboard(db: Session):
 
+        today = datetime.today()
+
+        #-----------------------------------------
+        # Sales Summary
+        #-----------------------------------------
+        total_sales = db.query(Sale).filter(func.extract('month', Sale.sale_date) == today.month, func.extract('year', Sale.sale_date) == today.year).count()
+        total_revenue = db.query(func.sum(Sale.total_amount)).filter(func.extract('month', Sale.sale_date) == today.month, func.extract('year', Sale.sale_date) == today.year).scalar() or 0.0
+        total_profit = db.query(func.sum((SaleItem.unit_price - Product.purchase_price) * SaleItem.quantity)).join(Sale).join(Product).filter(func.extract('month', Sale.sale_date) == today.month, func.extract('year', Sale.sale_date) == today.year).scalar() or 0.0
+        sales_summary = {
+            "total_sales": total_sales,
+            "total_revenue": total_revenue,
+            "total_profit": total_profit
+        }
+        #-----------------------------------------
+        # Today's Revenue
+        #-----------------------------------------
+        today_revenue = db.query(func.sum(Sale.total_amount)).filter(func.date(Sale.sale_date) == today.date()).scalar() or 0.0
+
+        #-----------------------------------------
+        # Low Stock Count (<= 5)        
+        #-----------------------------------------
+        low_stock_count = db.query(Product).filter(Product.stock_quantity <= 5).count()
+
+        return {
+            "sales_summary": sales_summary,
+            "today_revenue": today_revenue,
+            "low_stock_count": low_stock_count
+        }
     
+        #-----------------------------------------
+        # Top Selling Products
+        #-----------------------------------------
+        top_products = (
+            db.query(
+                Product.product_name,
+                func.sum(SaleItem.quantity).label('total_quantity'),
+                func.sum(SaleItem.unit_price * SaleItem.quantity).label('total_revenue')
+            )
+            .join(SaleItem, Product.product_id == SaleItem.product_id)
+            .group_by(Product.product_id)
+            .order_by(func.sum(SaleItem.quantity).desc())
+            .limit(5)
+            .all()
+        )
+
+        return {
+            "sales_summary": sales_summary,
+            "today_revenue": today_revenue,
+            "low_stock_count": low_stock_count,
+            "top_products": top_products
+        }
+    
+
+
     
