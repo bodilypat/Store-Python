@@ -7,6 +7,7 @@ class Sale(Base):
     __tablename__ = 'sales'
 
     sale_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete='SET NULL'), nullable=True)
     customer_id = Column(Integer, ForeignKey('customers.customer_id', ondelete='SET NULL'), nullable=True)
     total_amount = Column(DECIMAL(10, 2), nullable=False)
     sale_date = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
@@ -14,5 +15,8 @@ class Sale(Base):
 # Relationships
     customer = relationship("Customer", back_populates="sales")
     sale_items = relationship("SaleItem", back_populates="sale", cascade="all, delete-orphan")
+    user = relationship("User", back_populates="sales")
+
+    
 
     
