@@ -46,3 +46,34 @@ class ReceiptService:
             "total_amount": total_amount
         }
         return receipt_data
+    
+    @staticmethod
+    def generate_text_receipt(receipt_data):
+        lines = []
+        lines.append(f"Sale ID: {receipt_data['sale_id']}")
+        lines.append(f"Customer ID: {receipt_data['customer_id']}")
+        lines.append(f"Sale Date: {receipt_data['sale_date']}")
+        lines.append("\nItems:")
+        for item in receipt_data['items']:
+            lines.append(f"{item['product_name']} - Qty: {item['quantity']} @ ${item['unit_price']} each - Total: ${item['total_price']}")
+        lines.append(f"\nSubtotal: ${receipt_data['subtotal']:.2f}")
+        lines.append(f"Tax Amount: ${receipt_data['tax_amount']:.2f}")
+        lines.append(f"Total Amount: ${receipt_data['total_amount']:.2f}")
+        return "\n".join(lines)
+    
+    @staticmethod
+    def generate_receipt_pdf(db: Session, sale_id: int):
+        # Generate the receipt data
+        receipt_data = ReceiptService.generate_receipt(db, sale_id)
+        if not receipt_data:
+            raise ValueError("Receipt data not found")
+
+        # Generate text receipt for PDF content
+        text_receipt = ReceiptService.generate_text_receipt(receipt_data)
+
+        # Here you would implement the logic to convert text_receipt to PDF format
+        # For demonstration, we will return the text receipt as a placeholder for PDF data
+        pdf_data = f"PDF Content for Sale ID: {sale_id}\n\n{text_receipt}"
+        
+        return pdf_data
+    
